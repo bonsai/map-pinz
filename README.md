@@ -31,3 +31,9 @@ https://bonsai.github.io/map-pinz/?url=https://bonsai.github.io/festivals/data/f
 - Node / npm / build step 不要
 - 各domain repoをcanonにする
 - festivals / onsen / taki / その他のGeo dataを同じviewerで表示
+
+## Demo layers
+
+ダミーデータを同時表示するURL:
+
+`https://bonsai.github.io/map-pinz/?url=https://bonsai.github.io/map-pinz/data/festival.jsonl&url=https://bonsai.github.io/map-pinz/data/onsen.jsonl&url=https://bonsai.github.io/map-pinz/data/taki.jsonl`

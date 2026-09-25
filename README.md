@@ -1,18 +1,28 @@
 # map-pinz
 
-JSONLをURLで渡すだけで、位置情報を3D Globe上のピンとして表示するGitHub Pages viewer。
+JSON / JSONLをURLで渡すだけで、位置情報を3D Globe上のピンとして表示するGitHub Pages viewer。
 
-## Usage
+## One source
 
-https://bonsai.github.io/map-pinz/?jsonl=JSONL_URL
+`https://bonsai.github.io/map-pinz/?url=JSONL_URL`
 
-`data=` も使用可能。
+`jsonl=` / `data=` も使用可能。
 
-## JSONL
+## Multiple sources
 
-1行1JSON。最低限 `lat` / `lon` と `name` があれば表示。
+同じ `url` を複数指定すると、sourceごとに別レイヤーで表示します。
 
-`location.lat` / `location.lon`、latitude / longitude、lng も認識する。
+```text
+https://bonsai.github.io/map-pinz/?url=https://bonsai.github.io/festivals/data/festivals.jsonl&url=https://example.com/onsen.jsonl&url=https://example.com/taki.jsonl
+```
+
+画面上でレイヤーごとの表示 / 非表示を切り替えられます。
+
+## JSON / JSONL
+
+1行1JSONのJSONL、またはJSON配列 / 単一JSONを読み込めます。最低限 `lat` / `lon` と `name` があれば表示。
+
+`location.lat` / `location.lon`、latitude / longitude、lng も認識します。
 
 ## Design
 
@@ -20,4 +30,4 @@ https://bonsai.github.io/map-pinz/?jsonl=JSONL_URL
 - Three.js + three-globe
 - Node / npm / build step 不要
 - 各domain repoをcanonにする
-- festivals / onsen / taki / その他のGeoJSONLを同じviewerで表示
+- festivals / onsen / taki / その他のGeo dataを同じviewerで表示

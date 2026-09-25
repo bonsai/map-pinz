@@ -1,26 +1,7 @@
-<!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>map-pinz</title>
-<style>
-html,body{margin:0;height:100%;background:#0b0d10;color:#eee;font-family:system-ui,sans-serif}
-body{display:flex;flex-direction:column}header{padding:14px 18px;border-bottom:1px solid #252932;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-h1{font-size:18px;margin:0}.hint{opacity:.65;font-size:13px}input{flex:1;min-width:280px;background:#14171c;color:#fff;border:1px solid #343944;border-radius:7px;padding:9px}
-button{background:#20252d;color:#fff;border:1px solid #3b424d;border-radius:7px;padding:9px 13px;cursor:pointer}
-main{display:grid;grid-template-columns:1fr 350px;min-height:0;flex:1}#map{min-height:520px}aside{border-left:1px solid #252932;padding:16px;overflow:auto}
-.layer{display:flex;align-items:center;gap:7px;margin:5px 0}.swatch{width:10px;height:10px;border-radius:50%;display:inline-block}.item{padding:10px 0;border-bottom:1px solid #252932}.item b{display:block;margin-bottom:4px}a{color:#8ec5ff}.empty{opacity:.55}
-@media(max-width:800px){main{grid-template-columns:1fr}aside{border-left:0;border-top:1px solid #252932;max-height:42vh}}
-</style>
-</head>
-<body>
-<header><h1>map-pinz</h1><span class="hint">JSON / JSONL → layers</span><input id="url" placeholder="url=a.jsonl&url=b.jsonl"><button id="load">Load</button></header>
-<main><div id="map"></div><aside><div id="layers"></div><hr><div id="list"><div class="empty">JSONLを指定してください</div></div></aside></main>
-<script type="module">
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>map-pinz</title><style>html,body{margin:0;height:100%;background:#0b0d10;color:#eee;font-family:system-ui,sans-serif}body{display:flex;flex-direction:column}header{padding:14px 18px;border-bottom:1px solid #252932;display:flex;gap:10px;align-items:center;flex-wrap:wrap}h1{font-size:18px;margin:0}.hint{opacity:.65;font-size:13px}input{flex:1;min-width:280px;background:#14171c;color:#fff;border:1px solid #343944;border-radius:7px;padding:9px}button{background:#20252d;color:#fff;border:1px solid #3b424d;border-radius:7px;padding:9px 13px;cursor:pointer}main{display:grid;grid-template-columns:1fr 350px;min-height:0;flex:1}#map{min-height:520px}aside{border-left:1px solid #252932;padding:16px;overflow:auto}.layer{display:flex;align-items:center;gap:7px;margin:5px 0}.swatch{width:10px;height:10px;border-radius:50%;display:inline-block}.item{padding:10px 0;border-bottom:1px solid #252932}.item b{display:block;margin-bottom:4px}a{color:#8ec5ff}.empty{opacity:.55}@media(max-width:800px){main{grid-template-columns:1fr}aside{border-left:0;border-top:1px solid #252932;max-height:42vh}}</style></head><body><header><h1>map-pinz</h1><span class="hint">JSON / JSONL → layers</span><input id="url" placeholder="url=a.jsonl&url=b.jsonl"><button id="load">Load</button></header><main><div id="map"></div><aside><div id="layers"></div><hr><div id="list"><div class="empty">JSONLを指定してください</div></div></aside></main><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script><script type="module">
 import Globe from "https://cdn.jsdelivr.net/npm/three-globe@2.45.0/+esm";
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-import {OrbitControls} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js";
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 const root=document.querySelector("#map"),list=document.querySelector("#list"),layersEl=document.querySelector("#layers");
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x0b0d10);
 const camera=new THREE.PerspectiveCamera(45,1,.1,2000);camera.position.z=260;
@@ -35,17 +16,9 @@ function coord(o){const l=o.location||{};const lat=Number(o.lat??o.latitude??l.l
 function layerName(o,url,i){return o.type??o.category??url.split("/").pop()?.replace(/\.(jsonl?|json)$/,"")??("layer-"+(i+1))}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 async function loadOne(url,i){const res=await fetch(url);if(!res.ok)throw Error(res.status+" "+res.statusText);const data=rows(await res.text());return {url,data,pins:data.map(o=>{const c=coord(o);return c?{...o,...c}:null}).filter(Boolean),name:layerName(data[0]||{},url,i),color:palette[i%palette.length]}}
-function draw(ls){
- globe.pointsData(ls.flatMap(l=>l.pins.map(p=>({...p,__layer:l.name,__color:l.color}))))
- .pointLat("lat").pointLng("lng").pointAltitude(.02).pointRadius(.42).pointColor("__color");
- layersEl.innerHTML=ls.map((l,i)=>'<label class="layer"><input type="checkbox" checked data-layer="'+i+'"><span class="swatch" style="background:'+l.color+'"></span><b>'+esc(l.name)+'</b> <small>'+l.pins.length+' pins</small></label>').join("");
- document.querySelectorAll("[data-layer]").forEach(cb=>cb.onchange=()=>{const visible=ls.filter((_,i)=>document.querySelector('[data-layer="'+i+'"]').checked);drawVisible(visible)});
- list.innerHTML=ls.flatMap(l=>l.pins.map((o,i)=>'<div class="item"><b>'+esc(o.name??o.title??o.id??("pin "+(i+1)))+'</b><span>'+esc(l.name)+'</span><br><small>'+o.lat.toFixed(5)+", "+o.lng.toFixed(5)+'</small>'+(o.url||o.official_url?'<br><a target="_blank" rel="noopener" href="'+esc(o.url??o.official_url)+'">source</a>':"")+'</div>')).join("")||'<div class="empty">緯度・経度を持つレコードがありません</div>';
-}
+function draw(ls){globe.pointsData(ls.flatMap(l=>l.pins.map(p=>({...p,__color:l.color})))).pointLat("lat").pointLng("lng").pointAltitude(.02).pointRadius(.42).pointColor("__color");layersEl.innerHTML=ls.map((l,i)=>'<label class="layer"><input type="checkbox" checked data-layer="'+i+'"><span class="swatch" style="background:'+l.color+'"></span><b>'+esc(l.name)+'</b> <small>'+l.pins.length+' pins</small></label>').join("");document.querySelectorAll("[data-layer]").forEach(cb=>cb.onchange=()=>{drawVisible(ls.filter((_,i)=>document.querySelector('[data-layer="'+i+'"]').checked))});list.innerHTML=ls.flatMap(l=>l.pins.map((o,i)=>'<div class="item"><b>'+esc(o.name??o.title??o.id??("pin "+(i+1)))+'</b><span>'+esc(l.name)+'</span><br><small>'+o.lat.toFixed(5)+", "+o.lng.toFixed(5)+'</small>'+(o.url||o.official_url?'<br><a target="_blank" rel="noopener" href="'+esc(o.url??o.official_url)+'">source</a>':"")+'</div>')).join("")||'<div class="empty">緯度・経度を持つレコードがありません</div>'}
 function drawVisible(ls){globe.pointsData(ls.flatMap(l=>l.pins.map(p=>({...p,__color:l.color}))))}
-async function load(urls){const ls=await Promise.all(urls.map((u,i)=>loadOne(u,i)));draw(ls)}
-document.querySelector("#load").onclick=()=>{const raw=document.querySelector("#url").value.trim();if(raw){const urls=raw.split(/\s*,\s*|\s+/).filter(Boolean);load(urls).catch(e=>list.innerHTML='<div class="empty">Load error: '+esc(e.message)+'</div>')}};
-const p=new URLSearchParams(location.search);const urls=p.getAll("url").concat(p.getAll("jsonl"),p.getAll("data"));if(urls.length){document.querySelector("#url").value=urls.join(" ");load(urls).catch(e=>list.innerHTML='<div class="empty">Load error: '+esc(e.message)+'</div>')}
-</script>
-</body>
-</html>
+async function load(urls){draw(await Promise.all(urls.map((u,i)=>loadOne(u,i))))}
+document.querySelector("#load").onclick=()=>{const raw=document.querySelector("#url").value.trim();if(raw){load(raw.split(/\s*,\s*|\s+/).filter(Boolean)).catch(e=>list.innerHTML='<div class="empty">Load error: '+esc(e.message)+'</div>')}};
+const p=new URLSearchParams(location.search),urls=p.getAll("url").concat(p.getAll("jsonl"),p.getAll("data"));if(urls.length){document.querySelector("#url").value=urls.join(" ");load(urls).catch(e=>list.innerHTML='<div class="empty">Load error: '+esc(e.message)+'</div>')}
+</script></body></html>

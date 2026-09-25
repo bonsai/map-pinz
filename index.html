@@ -20,5 +20,5 @@ function draw(ls){globe.pointsData(ls.flatMap(l=>l.pins.map(p=>({...p,__color:l.
 function drawVisible(ls){globe.pointsData(ls.flatMap(l=>l.pins.map(p=>({...p,__color:l.color}))))}
 async function load(urls){draw(await Promise.all(urls.map((u,i)=>loadOne(u,i))))}
 document.querySelector("#load").onclick=()=>{const raw=document.querySelector("#url").value.trim();if(raw){load(raw.split(/\s*,\s*|\s+/).filter(Boolean)).catch(e=>list.innerHTML='<div class="empty">Load error: '+esc(e.message)+'</div>')}};
-const p=new URLSearchParams(location.search),urls=p.getAll("url").concat(p.getAll("jsonl"),p.getAll("data"));if(urls.length){document.querySelector("#url").value=urls.join(" ");load(urls).catch(e=>list.innerHTML='<div class="empty">Load error: '+esc(e.message)+'</div>')}
+const p=new URLSearchParams(location.search),urls=p.getAll("url").concat(p.getAll("jsonl"),p.getAll("data"));const defaults=["data/festival.jsonl","data/onsen.jsonl","data/taki.jsonl"];const initial=urls.length?urls:defaults;if(initial.length){document.querySelector("#url").value=initial.join(" ");load(initial).catch(e=>list.innerHTML='<div class="empty">Load error: '+esc(e.message)+'</div>')}
 </script></body></html>
